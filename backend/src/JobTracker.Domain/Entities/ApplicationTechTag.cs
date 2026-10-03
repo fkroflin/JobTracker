@@ -10,6 +10,6 @@ public class ApplicationTechTag
     public Guid TechTagId { get; set; }
     public TechTag TechTag { get; set; } = null!;
 
-    public bool IsRequired { get; set; } = true;
+    public bool IsRequired { get; set; } = true;        
     public SkillLevel CandidateSkillLevel { get; set; } = SkillLevel.Familiar;
 }
