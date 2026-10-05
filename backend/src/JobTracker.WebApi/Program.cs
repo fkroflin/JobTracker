@@ -1,11 +1,12 @@
 using JobTracker.Infrastructure;
+using JobTracker.Application;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
 builder.Services.AddJobTrackerInfrastructure(builder.Configuration);
-
+builder.Services.AddJobTrackerApplication();
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
