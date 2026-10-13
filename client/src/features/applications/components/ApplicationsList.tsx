@@ -62,7 +62,7 @@ export const ApplicationsList = () => {
                 )}
               </td>
               <td className="px-6 py-4">
-                <StatusBadge status={app.status} />
+                <StatusBadge id={app.id} status={app.status} />
               </td>
               <td className="px-6 py-4 text-sm text-gray-500">
                 {new Date(app.appliedDate).toLocaleDateString('hr-HR')}

@@ -23,4 +23,17 @@ public class ApplicationsController : ApiControllerBase
         var id = await Mediator.Send(command);
         return CreatedAtAction(nameof(GetAll), new { id }, id);
     }
+
+    [HttpPatch("{id:guid}/status")]
+    public async Task<IActionResult> UpdateStatus(Guid id, [FromBody] ApplicationStatus newStatus)
+    {
+        var success = await Mediator.Send(new UpdateApplicationStatusCommand(id, newStatus));
+
+        if (!success)
+        {
+            return NotFound();
+        }
+
+        return NoContent(); 
+    }
 }
