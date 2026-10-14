@@ -3,6 +3,8 @@ using JobTracker.Application.Features.Applications.Dtos;
 using JobTracker.Application.Features.Applications.Queries;
 using JobTracker.Domain.Enums;
 using Microsoft.AspNetCore.Mvc;
+using JobTracker.Application.Common.Interfaces;
+
 
 namespace JobTracker.WebApi.Controllers;
 
@@ -36,4 +38,21 @@ public class ApplicationsController : ApiControllerBase
 
         return NoContent(); 
     }
+    private readonly INotificationService _notificationService;
+
+    public ApplicationsController(INotificationService notificationService)
+    {
+        _notificationService = notificationService;
+    }
+
+    // POST: /api/applications/test-notification
+    [HttpPost("test-notification")]
+    public async Task<IActionResult> TestNotification()
+    {
+        await _notificationService.SendNotificationAsync(
+            "🚀 *Job Application Tracker*\n\nPozdrav! Tvoj Telegram bot je uspješno povezan s backendom!");
+
+        return Ok(new { message = "Notifikacija poslana!" });
+    }
+    
 }

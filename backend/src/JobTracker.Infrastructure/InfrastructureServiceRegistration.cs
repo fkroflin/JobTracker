@@ -1,5 +1,6 @@
 using JobTracker.Application.Common.Interfaces;
 using JobTracker.Infrastructure.Persistence;
+using JobTracker.Infrastructure.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -8,7 +9,7 @@ namespace JobTracker.Infrastructure;
 
 public static class InfrastructureServiceRegistration
 {
-    public static IServiceCollection AddJobTrackerInfrastructure(
+    public static IServiceCollection AddInfrastructureServices(
         this IServiceCollection services,
         IConfiguration configuration)
     {
@@ -19,6 +20,8 @@ public static class InfrastructureServiceRegistration
 
         services.AddScoped<IApplicationDbContext>(provider =>
             provider.GetRequiredService<ApplicationDbContext>());
+
+        services.AddHttpClient<INotificationService, TelegramNotificationService>();
 
         return services;
     }
