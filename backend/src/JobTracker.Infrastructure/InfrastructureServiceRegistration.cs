@@ -1,4 +1,5 @@
 using JobTracker.Application.Common.Interfaces;
+using JobTracker.Infrastructure.BackgroundServices;
 using JobTracker.Infrastructure.Persistence;
 using JobTracker.Infrastructure.Services;
 using Microsoft.EntityFrameworkCore;
@@ -22,6 +23,7 @@ public static class InfrastructureServiceRegistration
             provider.GetRequiredService<ApplicationDbContext>());
 
         services.AddHttpClient<INotificationService, TelegramNotificationService>();
+        services.AddHostedService<ApplicationFollowUpWorker>();
 
         return services;
     }
