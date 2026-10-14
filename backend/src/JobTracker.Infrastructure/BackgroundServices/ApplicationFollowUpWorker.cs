@@ -73,7 +73,7 @@ public class ApplicationFollowUpWorker : BackgroundService
                 messageBuilder.AppendLine();
             }
 
-            messageBuilder.AppendLine("💡 _Savjet: Pošalji kratki e-mail regruteru i provjeri status selekcijskog postupka!_");
+            messageBuilder.AppendLine("💡 _Savjet: Pošalji kratki e-mail i provjeri status selekcijskog postupka!_");
 
             await notificationService.SendNotificationAsync(messageBuilder.ToString(), cancellationToken);
         }

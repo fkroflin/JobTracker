@@ -4,6 +4,7 @@ import { CreateApplicationModal } from './features/applications/components/Creat
 import { KanbanBoard } from './features/kanban/components/KanbanBoard'
 import { useApplications } from './features/applications/hooks/useApplications'
 import { Plus, LayoutGrid, List } from 'lucide-react'
+import { StatsOverview } from './features/applications/components/StatsOverview'
 
 function App() {
   const [isModalOpen, setIsModalOpen] = useState(false)
@@ -59,6 +60,7 @@ function App() {
       </header>
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <StatsOverview applications={applications || []} />
         <div className="bg-white rounded-lg shadow min-h-[400px]">
           <div className="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
             <h2 className="text-lg font-semibold text-gray-700">Moje prijave</h2>
