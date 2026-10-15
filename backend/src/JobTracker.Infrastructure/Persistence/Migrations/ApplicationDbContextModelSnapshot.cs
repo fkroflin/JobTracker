@@ -170,6 +170,58 @@ namespace JobTracker.Infrastructure.Persistence.Migrations
                     b.ToTable("Companies");
                 });
 
+            modelBuilder.Entity("JobTracker.Domain.Entities.DiscoveredJob", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("CompanyName")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<bool>("IsConvertedToApplication")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("IsDismissed")
+                        .HasColumnType("boolean");
+
+                    b.Property<int>("JobCategory")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("JobUrl")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Location")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("PublishedDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Source")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("JobUrl")
+                        .IsUnique();
+
+                    b.ToTable("DiscoveredJobs");
+                });
+
             modelBuilder.Entity("JobTracker.Domain.Entities.TechTag", b =>
                 {
                     b.Property<Guid>("Id")

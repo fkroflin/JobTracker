@@ -11,6 +11,7 @@ public interface IApplicationDbContext
     DbSet<ApplicationEntity> Applications { get; }
     DbSet<ApplicationStage> ApplicationStages { get; }
     DbSet<ApplicationTechTag> ApplicationTechTags { get; }
+    DbSet<DiscoveredJob> DiscoveredJobs { get; }
 
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
 }

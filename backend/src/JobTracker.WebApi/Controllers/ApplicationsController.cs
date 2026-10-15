@@ -5,7 +5,6 @@ using JobTracker.Domain.Enums;
 using Microsoft.AspNetCore.Mvc;
 using JobTracker.Application.Common.Interfaces;
 
-
 namespace JobTracker.WebApi.Controllers;
 
 public class ApplicationsController : ApiControllerBase
@@ -39,20 +38,20 @@ public class ApplicationsController : ApiControllerBase
         return NoContent(); 
     }
     private readonly INotificationService _notificationService;
+    private readonly IJobScraperService _scraperService;
 
-    public ApplicationsController(INotificationService notificationService)
+    public ApplicationsController(INotificationService notificationService, IJobScraperService scraperService)
     {
         _notificationService = notificationService;
+        _scraperService = scraperService;
     }
 
-    // POST: /api/applications/test-notification
-    [HttpPost("test-notification")]
-    public async Task<IActionResult> TestNotification()
+    //Test endpoint for scraping jobs from MojPosao
+    [HttpGet("scrape")]
+    public async Task<IActionResult> ScrapeJobs([FromQuery] string keyword = "junior")
     {
-        await _notificationService.SendNotificationAsync(
-            "🚀 *Job Application Tracker*\n\nPozdrav! Tvoj Telegram bot je uspješno povezan s backendom!");
-
-        return Ok(new { message = "Notifikacija poslana!" });
+        var jobs = await _scraperService.ScrapeJobsAsync(keyword);
+        return Ok(jobs);
     }
-    
+
 }

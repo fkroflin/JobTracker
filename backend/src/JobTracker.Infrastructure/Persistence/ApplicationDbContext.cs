@@ -19,11 +19,16 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
     public DbSet<ApplicationEntity> Applications => Set<ApplicationEntity>();
     public DbSet<ApplicationStage> ApplicationStages => Set<ApplicationStage>();
     public DbSet<ApplicationTechTag> ApplicationTechTags => Set<ApplicationTechTag>();
+    public DbSet<DiscoveredJob> DiscoveredJobs => Set<DiscoveredJob>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
 
         modelBuilder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly());
+
+        modelBuilder.Entity<DiscoveredJob>()
+        .HasIndex(j => j.JobUrl)
+        .IsUnique();
     }
 }
