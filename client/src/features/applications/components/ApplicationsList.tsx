@@ -1,12 +1,15 @@
 import { type ApplicationDto, JobCategory } from '../../../types'
 import { StatusBadge } from './StatusBadge'
-import { Briefcase, Code2, ExternalLink } from 'lucide-react'
+import { Briefcase, Code2, ExternalLink, Trash2 } from 'lucide-react'
+import { useDeleteApplication } from '../hooks/useDeleteApplication'
 
 interface Props {
   applications: ApplicationDto[]
 }
 
 export const ApplicationsList = ({ applications }: Props) => {
+  const deleteMutation = useDeleteApplication()
+
   if (!applications || applications.length === 0) {
     return (
       <div className="text-center py-16 text-gray-400">
@@ -26,6 +29,7 @@ export const ApplicationsList = ({ applications }: Props) => {
             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Datum prijave</th>
             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tech Stack</th>
             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Link</th>
+            <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Akcije</th>
           </tr>
         </thead>
         <tbody className="bg-white divide-y divide-gray-200">
@@ -68,6 +72,21 @@ export const ApplicationsList = ({ applications }: Props) => {
                     <ExternalLink size={16} />
                   </a>
                 )}
+              </td>
+              <td className="px-6 py-4 text-right">
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (confirm(`Želiš li sigurno obrisati prijavu za ${app.companyName}?`)) {
+                      deleteMutation.mutate(app.id)
+                    }
+                  }}
+                  disabled={deleteMutation.isPending}
+                  className="text-gray-400 hover:text-red-600 transition-colors p-1 cursor-pointer"
+                  title="Obriši prijavu"
+                >
+                  <Trash2 size={16} />
+                </button>
               </td>
             </tr>
           ))}

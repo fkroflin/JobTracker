@@ -1,13 +1,14 @@
 import { Draggable } from '@hello-pangea/dnd'
 import { type ApplicationDto, JobCategory } from '../../../types'
-import { Briefcase, Code2, ExternalLink } from 'lucide-react'
+import { Briefcase, Code2, ExternalLink, Trash2 } from 'lucide-react'
+import { useDeleteApplication } from '../../applications/hooks/useDeleteApplication'
 
 interface Props {
   application: ApplicationDto
   index: number
 }
 
-export const KanbanCard = ({ application, index }: Props) => {
+export const KanbanCard = ({ application, index }: Props) => {const deleteMutation = useDeleteApplication()
   return (
     <Draggable draggableId={application.id} index={index}>
       {(provided, snapshot) => (
@@ -54,17 +55,34 @@ export const KanbanCard = ({ application, index }: Props) => {
 
           <div className="flex justify-between items-center text-[11px] text-gray-400 pt-2 border-t border-gray-100">
             <span>{new Date(application.appliedDate).toLocaleDateString('hr-HR')}</span>
-            {application.jobUrl && (
-              <a
-                href={application.jobUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                onClick={e => e.stopPropagation()} // prevents drag activation on link click
-                className="text-blue-500 hover:text-blue-700"
+            <div className="flex items-center gap-1.5">
+              {application.jobUrl && (
+                <a
+                  href={application.jobUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  onClick={e => e.stopPropagation()} // prevents drag activation on link click
+                  className="text-blue-500 hover:text-blue-700 p-0.5"
+                  title="Otvori oglas"
+                >
+                  <ExternalLink size={13} />
+                </a>
+              )}
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation()
+                  if (confirm(`Želiš li sigurno obrisati prijavu za ${application.companyName}?`)) {
+                    deleteMutation.mutate(application.id)
+                  }
+                }}
+                disabled={deleteMutation.isPending}
+                className="text-gray-400 hover:text-red-600 p-0.5 transition-colors cursor-pointer"
+                title="Obriši prijavu"
               >
-                <ExternalLink size={13} />
-              </a>
-            )}
+                <Trash2 size={13} />
+              </button>
+            </div>
           </div>
         </div>
       )}

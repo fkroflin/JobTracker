@@ -54,4 +54,16 @@ public class ApplicationsController : ApiControllerBase
         return Ok(jobs);
     }
 
+    [HttpDelete("{id:guid}")]
+    public async Task<IActionResult> Delete(Guid id)
+    {
+        var success = await Mediator.Send(new DeleteApplicationCommand(id));
+        if (!success)
+        {
+            return NotFound();
+        }
+
+        return NoContent();
+    }
+
 }
