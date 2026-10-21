@@ -65,7 +65,7 @@ public class MojPosaoScraperService : IJobScraperService
                 title = System.Text.RegularExpressions.Regex.Replace(title, @"\s+", " ");
 
                 if (string.IsNullOrWhiteSpace(title) || title.Length < 4 || 
-                    href.Contains("#") || href.Contains("prijava") || seenUrls.Contains(href))
+                href.Contains("#") || href.Contains("prijava") || href.Contains("recommendations") || seenUrls.Contains(href))
                 {
                     continue;
                 }
