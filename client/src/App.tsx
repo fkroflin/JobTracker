@@ -1,16 +1,39 @@
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import { ApplicationsList } from './features/applications/components/ApplicationsList'
 import { CreateApplicationModal } from './features/applications/components/CreateApplicationModal'
 import { KanbanBoard } from './features/kanban/components/KanbanBoard'
 import { useApplications } from './features/applications/hooks/useApplications'
-import { Plus, LayoutGrid, List, Compass } from 'lucide-react'
+import { Plus, LayoutGrid, List, Compass, Search, Filter } from 'lucide-react'
 import { StatsOverview } from './features/applications/components/StatsOverview'
 import { JobFeedView } from './features/discoveredJobs/components/JobFeedView'
+import { JobCategory } from './types'
 
 function App() {
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [viewMode, setViewMode] = useState<'table' | 'kanban' | 'feed'>('kanban')
   const { data: applications, isLoading, isError } = useApplications()
+
+  const [searchQuery, setSearchQuery] = useState('')
+  const [categoryFilter, setCategoryFilter] = useState<'all' | 'it' | 'general'>('all')
+
+  const filteredApplications = useMemo(() => {
+    if (!applications) return []
+
+    return applications.filter(app => {
+      const q = searchQuery.toLowerCase().trim()
+      const matchesSearch = !q || 
+        app.companyName.toLowerCase().includes(q) ||
+        app.positionTitle.toLowerCase().includes(q) ||
+        app.techTags.some(t => t.toLowerCase().includes(q))
+
+      const matchesCategory = 
+        categoryFilter === 'all' ||
+        (categoryFilter === 'it' && app.jobCategory === JobCategory.IT) ||
+        (categoryFilter === 'general' && app.jobCategory === JobCategory.General)
+
+      return matchesSearch && matchesCategory
+    })
+  }, [applications, searchQuery, categoryFilter])
 
   return (
     <div className="min-h-screen bg-gray-100">
@@ -75,14 +98,68 @@ function App() {
         <StatsOverview applications={applications || []} />
 
         <div className="bg-white rounded-lg shadow min-h-[400px]">
-          <div className="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
-            <h2 className="text-lg font-semibold text-gray-700">
-              {viewMode === 'feed' ? 'Pronađeni poslovi (Feed)' : 'Moje prijave'}
-            </h2>
-            {applications && viewMode !== 'feed' && (
-              <span className="text-xs text-gray-500">
-                Ukupno prijava: <span className="font-bold text-gray-700">{applications.length}</span>
-              </span>
+                    <div className="px-6 py-4 border-b border-gray-200 flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div className="flex items-center gap-3">
+              <h2 className="text-lg font-semibold text-gray-700">
+                {viewMode === 'feed' ? 'Pronađeni poslovi (Feed)' : 'Moje prijave'}
+              </h2>
+              {applications && viewMode !== 'feed' && (
+                <span className="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full font-medium">
+                  {filteredApplications.length} od {applications.length}
+                </span>
+              )}
+            </div>
+
+            {/* Tražilica i Filteri (samo za Kanban i Tablicu) */}
+            {viewMode !== 'feed' && (
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+                <div className="relative">
+                  <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                  <input
+                    type="text"
+                    value={searchQuery}
+                    onChange={e => setSearchQuery(e.target.value)}
+                    placeholder="Traži tvrtku, poziciju, tag..."
+                    className="pl-8 pr-3 py-1.5 border border-gray-300 rounded-lg text-xs bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 w-full sm:w-56"
+                  />
+                  {searchQuery && (
+                    <button
+                      onClick={() => setSearchQuery('')}
+                      className="absolute right-2.5 top-1/2 -translate-y-1/2 text-xs text-gray-400 hover:text-gray-600"
+                    >
+                      ×
+                    </button>
+                  )}
+                </div>
+
+                <div className="flex items-center gap-1 bg-gray-50 p-1 rounded-lg border border-gray-200 text-xs">
+                  <Filter size={12} className="text-gray-400 ml-1.5 mr-0.5" />
+                  <button
+                    onClick={() => setCategoryFilter('all')}
+                    className={`px-2.5 py-1 rounded text-xs font-medium transition-all ${
+                      categoryFilter === 'all' ? 'bg-white text-gray-900 shadow-xs' : 'text-gray-500 hover:text-gray-800'
+                    }`}
+                  >
+                    Sve
+                  </button>
+                  <button
+                    onClick={() => setCategoryFilter('it')}
+                    className={`px-2.5 py-1 rounded text-xs font-medium transition-all ${
+                      categoryFilter === 'it' ? 'bg-white text-indigo-700 shadow-xs font-semibold' : 'text-gray-500 hover:text-gray-800'
+                    }`}
+                  >
+                    Samo IT
+                  </button>
+                  <button
+                    onClick={() => setCategoryFilter('general')}
+                    className={`px-2.5 py-1 rounded text-xs font-medium transition-all ${
+                      categoryFilter === 'general' ? 'bg-white text-gray-900 shadow-xs font-semibold' : 'text-gray-500 hover:text-gray-800'
+                    }`}
+                  >
+                    Opći
+                  </button>
+                </div>
+              </div>
             )}
           </div>
 
@@ -97,9 +174,9 @@ function App() {
           ) : viewMode === 'feed' ? (
             <JobFeedView />
           ) : viewMode === 'kanban' ? (
-            <KanbanBoard applications={applications || []} />
+            <KanbanBoard applications={filteredApplications} />
           ) : (
-            <ApplicationsList />
+            <ApplicationsList applications={filteredApplications} />
           )}
         </div>
       </main>

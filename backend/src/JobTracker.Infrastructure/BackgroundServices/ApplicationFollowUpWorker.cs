@@ -12,7 +12,7 @@ public class ApplicationFollowUpWorker : BackgroundService
     private readonly IServiceProvider _serviceProvider;
     private readonly ILogger<ApplicationFollowUpWorker> _logger;
 
-    private readonly TimeSpan _checkInterval = TimeSpan.FromMinutes(2);
+    private readonly TimeSpan _checkInterval = TimeSpan.FromHours(24);
 
     public ApplicationFollowUpWorker(
         IServiceProvider serviceProvider,

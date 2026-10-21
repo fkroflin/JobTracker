@@ -1,31 +1,16 @@
-import { useApplications } from '../hooks/useApplications'
+import { type ApplicationDto, JobCategory } from '../../../types'
 import { StatusBadge } from './StatusBadge'
-import { JobCategory } from '../../../types'
 import { Briefcase, Code2, ExternalLink } from 'lucide-react'
 
-export const ApplicationsList = () => {
-  const { data: applications, isLoading, isError } = useApplications()
+interface Props {
+  applications: ApplicationDto[]
+}
 
-  if (isLoading) {
-    return (
-      <div className="flex justify-center items-center h-64">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600" />
-      </div>
-    )
-  }
-
-  if (isError) {
-    return (
-      <div className="text-center py-16 text-red-500">
-        Greška pri dohvaćanju prijava. Provjeri je li backend pokrenut.
-      </div>
-    )
-  }
-
+export const ApplicationsList = ({ applications }: Props) => {
   if (!applications || applications.length === 0) {
     return (
       <div className="text-center py-16 text-gray-400">
-        Nema prijava za prikaz. Dodaj svoju prvu prijavu!
+        Nema prijava koje odgovaraju zadanim filterima.
       </div>
     )
   }
@@ -52,11 +37,11 @@ export const ApplicationsList = () => {
               </td>
               <td className="px-6 py-4">
                 {app.jobCategory === JobCategory.IT ? (
-                  <span className="flex items-center gap-1 text-indigo-600 text-sm">
+                  <span className="flex items-center gap-1 text-indigo-600 text-sm font-medium">
                     <Code2 size={14} /> IT
                   </span>
                 ) : (
-                  <span className="flex items-center gap-1 text-gray-500 text-sm">
+                  <span className="flex items-center gap-1 text-gray-500 text-sm font-medium">
                     <Briefcase size={14} /> Opći
                   </span>
                 )}
@@ -70,7 +55,7 @@ export const ApplicationsList = () => {
               <td className="px-6 py-4">
                 <div className="flex flex-wrap gap-1">
                   {app.techTags.map((tag) => (
-                    <span key={tag} className="px-2 py-0.5 bg-indigo-50 text-indigo-700 rounded text-xs">
+                    <span key={tag} className="px-2 py-0.5 bg-indigo-50 text-indigo-700 rounded text-xs font-medium">
                       {tag}
                     </span>
                   ))}
