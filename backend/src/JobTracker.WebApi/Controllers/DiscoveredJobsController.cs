@@ -24,4 +24,19 @@ public class DiscoveredJobsController : ApiControllerBase
             jobs = newJobs
         });
     }
+
+    [HttpPost("{id:guid}/convert")]
+    public async Task<IActionResult> ConvertToApplication(Guid id)
+    {
+        var applicationId = await Mediator.Send(new ConvertJobToApplicationCommand(id));
+        return Ok(new { applicationId });
+    }
+
+    [HttpPost("{id:guid}/dismiss")]
+    public async Task<IActionResult> Dismiss(Guid id)
+    {
+        var success = await Mediator.Send(new DismissDiscoveredJobCommand(id));
+        if (!success) return NotFound();
+        return NoContent();
+    }
 }

@@ -32,3 +32,14 @@ export interface ApplicationDto {
   notes: string | null
   techTags: string[]
 }
+export interface DiscoveredJobDto {
+  id: string
+  title: string
+  companyName: string
+  location: string
+  jobUrl: string
+  source: string
+  jobCategory: JobCategory
+  publishedDate: string
+  createdAt: string
+}

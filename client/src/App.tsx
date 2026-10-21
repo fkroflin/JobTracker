@@ -3,12 +3,13 @@ import { ApplicationsList } from './features/applications/components/Application
 import { CreateApplicationModal } from './features/applications/components/CreateApplicationModal'
 import { KanbanBoard } from './features/kanban/components/KanbanBoard'
 import { useApplications } from './features/applications/hooks/useApplications'
-import { Plus, LayoutGrid, List } from 'lucide-react'
+import { Plus, LayoutGrid, List, Compass } from 'lucide-react'
 import { StatsOverview } from './features/applications/components/StatsOverview'
+import { JobFeedView } from './features/discoveredJobs/components/JobFeedView'
 
 function App() {
   const [isModalOpen, setIsModalOpen] = useState(false)
-  const [viewMode, setViewMode] = useState<'table' | 'kanban'>('kanban')
+  const [viewMode, setViewMode] = useState<'table' | 'kanban' | 'feed'>('kanban')
   const { data: applications, isLoading, isError } = useApplications()
 
   return (
@@ -46,6 +47,17 @@ function App() {
                 <List size={14} />
                 Tablica
               </button>
+              <button
+                onClick={() => setViewMode('feed')}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-all ${
+                  viewMode === 'feed'
+                    ? 'bg-white text-gray-900 shadow-sm'
+                    : 'text-gray-600 hover:text-gray-900'
+                }`}
+              >
+                <Compass size={14} />
+                Pronađeni poslovi
+              </button>
             </div>
 
             <button
@@ -59,12 +71,15 @@ function App() {
         </div>
       </header>
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <StatsOverview applications={applications || []} />
+
         <div className="bg-white rounded-lg shadow min-h-[400px]">
           <div className="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
-            <h2 className="text-lg font-semibold text-gray-700">Moje prijave</h2>
-            {applications && (
+            <h2 className="text-lg font-semibold text-gray-700">
+              {viewMode === 'feed' ? 'Pronađeni poslovi (Feed)' : 'Moje prijave'}
+            </h2>
+            {applications && viewMode !== 'feed' && (
               <span className="text-xs text-gray-500">
                 Ukupno prijava: <span className="font-bold text-gray-700">{applications.length}</span>
               </span>
@@ -79,6 +94,8 @@ function App() {
             <div className="text-center py-16 text-red-500 text-sm">
               Greška pri dohvaćanju prijava. Provjeri je li backend pokrenut.
             </div>
+          ) : viewMode === 'feed' ? (
+            <JobFeedView />
           ) : viewMode === 'kanban' ? (
             <KanbanBoard applications={applications || []} />
           ) : (

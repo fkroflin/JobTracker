@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace JobTracker.Application.Features.DiscoveredJobs.Commands;
 
-public record SyncDiscoveredJobsCommand(string Keyword) : IRequest<List<DiscoveredJob>>;
+public record SyncDiscoveredJobsCommand(string Keyword, bool SendNotification = false) : IRequest<List<DiscoveredJob>>;
 
 public class SyncDiscoveredJobsCommandHandler : IRequestHandler<SyncDiscoveredJobsCommand, List<DiscoveredJob>>
 {
@@ -49,7 +49,10 @@ public class SyncDiscoveredJobsCommandHandler : IRequestHandler<SyncDiscoveredJo
         _context.DiscoveredJobs.AddRange(newJobs);
         await _context.SaveChangesAsync(cancellationToken);
 
-        await SendTelegramAlertAsync(newJobs, request.Keyword, cancellationToken);
+        if (request.SendNotification)
+        {
+            await SendTelegramAlertAsync(newJobs, request.Keyword, cancellationToken);
+        }
 
         return newJobs;
     }
