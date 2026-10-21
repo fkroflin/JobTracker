@@ -1,15 +1,14 @@
 FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
 WORKDIR /app
 
-COPY JobTracker.sln ./
+COPY JobTracker.slnx ./
 
 COPY src/JobTracker.Domain/JobTracker.Domain.csproj src/JobTracker.Domain/
 COPY src/JobTracker.Application/JobTracker.Application.csproj src/JobTracker.Application/
 COPY src/JobTracker.Infrastructure/JobTracker.Infrastructure.csproj src/JobTracker.Infrastructure/
 COPY src/JobTracker.WebApi/JobTracker.WebApi.csproj src/JobTracker.WebApi/
 
-# Vršimo restore
-RUN dotnet restore JobTracker.sln
+RUN dotnet restore JobTracker.slnx
 
 COPY . .
 
