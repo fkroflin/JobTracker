@@ -26,6 +26,7 @@ public class SyncDiscoveredJobsCommandHandler : IRequestHandler<SyncDiscoveredJo
     public async Task<List<DiscoveredJob>> Handle(SyncDiscoveredJobsCommand request, CancellationToken cancellationToken)
     {
         var scrapedJobs = await _scraperService.ScrapeJobsAsync(request.Keyword, cancellationToken);
+
         if (scrapedJobs.Count == 0)
         {
             return new List<DiscoveredJob>();
@@ -66,7 +67,7 @@ public class SyncDiscoveredJobsCommandHandler : IRequestHandler<SyncDiscoveredJo
         foreach (var job in newJobs.Take(5))
         {
             sb.AppendLine($"🔹 *{job.Title}*");
-            sb.AppendLine($"   📍 {job.Location}");
+            sb.AppendLine($"   📍 {job.Location} ({job.Source})");
             sb.AppendLine($"   🔗 [Pogledaj oglas]({job.JobUrl})");
             sb.AppendLine();
         }

@@ -25,6 +25,7 @@ public static class InfrastructureServiceRegistration
         services.AddHttpClient<INotificationService, TelegramNotificationService>();
         services.AddHostedService<ApplicationFollowUpWorker>();
         services.AddHttpClient<IJobScraperService, MojPosaoScraperService>();
+        services.AddHttpClient<StudentskiPosloviScraperService>();
 
         return services;
     }

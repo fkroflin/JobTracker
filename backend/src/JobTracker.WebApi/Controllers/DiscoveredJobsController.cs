@@ -1,5 +1,6 @@
 using JobTracker.Application.Features.DiscoveredJobs.Commands;
 using JobTracker.Application.Features.DiscoveredJobs.Queries;
+using JobTracker.Infrastructure.Services;
 using Microsoft.AspNetCore.Mvc;
 
 namespace JobTracker.WebApi.Controllers;
@@ -38,5 +39,18 @@ public class DiscoveredJobsController : ApiControllerBase
         var success = await Mediator.Send(new DismissDiscoveredJobCommand(id));
         if (!success) return NotFound();
         return NoContent();
+    }
+
+    private readonly StudentskiPosloviScraperService _studentskiScraper;
+    public DiscoveredJobsController(StudentskiPosloviScraperService studentskiScraper)
+    {
+        _studentskiScraper = studentskiScraper;
+    }
+
+    [HttpGet("studentski")]
+    public async Task<IActionResult> GetStudentskiJobs([FromQuery] string keyword = "all")
+    {
+        var jobs = await _studentskiScraper.ScrapeJobsAsync(keyword);
+        return Ok(jobs);
     }
 }
