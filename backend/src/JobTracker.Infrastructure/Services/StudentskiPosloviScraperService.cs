@@ -1,13 +1,14 @@
 using System.Net;
 using System.Text.RegularExpressions;
 using HtmlAgilityPack;
+using JobTracker.Application.Common.Interfaces;
 using JobTracker.Domain.Entities;
 using JobTracker.Domain.Enums;
 using Microsoft.Extensions.Logging;
 
 namespace JobTracker.Infrastructure.Services;
 
-public class StudentskiPosloviScraperService
+public class StudentskiPosloviScraperService : IJobScraperService
 {
     private readonly HttpClient _httpClient;
     private readonly ILogger<StudentskiPosloviScraperService> _logger;
@@ -32,7 +33,7 @@ public class StudentskiPosloviScraperService
 
         try
         {
-            _logger.LogInformation("Pokrećem scraping s portala studentski-poslovi.hr: {Url}", url);
+            _logger.LogInformation("Pokrećem scraping s portala studentski-poslovi.hr za Osijek: {Url}", url);
 
             var html = await _httpClient.GetStringAsync(url, cancellationToken);
             var doc = new HtmlDocument();
@@ -87,7 +88,7 @@ public class StudentskiPosloviScraperService
                     CreatedAt = DateTime.UtcNow,
                 });
 
-                if (discoveredJobs.Count >= 15) break;
+                if (discoveredJobs.Count >= 25) break;
             }
 
             _logger.LogInformation("Pronađeno {Count} studentskih poslova u Osijeku.", discoveredJobs.Count);
