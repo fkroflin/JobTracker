@@ -5,9 +5,10 @@ import { useDeleteApplication } from '../hooks/useDeleteApplication'
 
 interface Props {
   applications: ApplicationDto[]
+  onRowClick?: (app: ApplicationDto) => void
 }
 
-export const ApplicationsList = ({ applications }: Props) => {
+export const ApplicationsList = ({ applications, onRowClick }: Props) => {
   const deleteMutation = useDeleteApplication()
 
   if (!applications || applications.length === 0) {
@@ -34,12 +35,16 @@ export const ApplicationsList = ({ applications }: Props) => {
         </thead>
         <tbody className="bg-white divide-y divide-gray-200">
           {applications.map((app) => (
-            <tr key={app.id} className="hover:bg-gray-50 transition-colors">
+            <tr 
+              key={app.id} 
+              onClick={() => onRowClick?.(app)}
+              className="hover:bg-gray-50 transition-colors cursor-pointer"
+            >
               <td className="px-6 py-4">
-                <div className="font-medium text-gray-900">{app.companyName}</div>
+                <div className="font-medium text-gray-900 hover:text-blue-600 transition-colors">{app.companyName}</div>
                 <div className="text-sm text-gray-500">{app.positionTitle}</div>
               </td>
-              <td className="px-6 py-4">
+              <td className="px-6 py-4" onClick={e => e.stopPropagation()}>
                 {app.jobCategory === JobCategory.IT ? (
                   <span className="flex items-center gap-1 text-indigo-600 text-sm font-medium">
                     <Code2 size={14} /> IT
@@ -50,7 +55,7 @@ export const ApplicationsList = ({ applications }: Props) => {
                   </span>
                 )}
               </td>
-              <td className="px-6 py-4">
+              <td className="px-6 py-4" onClick={e => e.stopPropagation()}>
                 <StatusBadge id={app.id} status={app.status} />
               </td>
               <td className="px-6 py-4 text-sm text-gray-500">
@@ -65,7 +70,7 @@ export const ApplicationsList = ({ applications }: Props) => {
                   ))}
                 </div>
               </td>
-              <td className="px-6 py-4">
+              <td className="px-6 py-4" onClick={e => e.stopPropagation()}>
                 {app.jobUrl && (
                   <a href={app.jobUrl} target="_blank" rel="noopener noreferrer"
                      className="text-blue-500 hover:text-blue-700">
@@ -73,7 +78,7 @@ export const ApplicationsList = ({ applications }: Props) => {
                   </a>
                 )}
               </td>
-              <td className="px-6 py-4 text-right">
+              <td className="px-6 py-4 text-right" onClick={e => e.stopPropagation()}>
                 <button
                   type="button"
                   onClick={() => {

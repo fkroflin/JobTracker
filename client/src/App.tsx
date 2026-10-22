@@ -1,16 +1,17 @@
 import { useState, useMemo } from 'react'
 import { ApplicationsList } from './features/applications/components/ApplicationsList'
 import { CreateApplicationModal } from './features/applications/components/CreateApplicationModal'
+import { ApplicationDetailsModal } from './features/applications/components/ApplicationDetailsModal'
 import { KanbanBoard } from './features/kanban/components/KanbanBoard'
 import { useApplications } from './features/applications/hooks/useApplications'
-import { Plus, LayoutGrid, List, Compass, Search, Filter } from 'lucide-react'
+import { Plus, LayoutGrid, List, Search, Filter, Download } from 'lucide-react'
 import { StatsOverview } from './features/applications/components/StatsOverview'
-import { JobFeedView } from './features/discoveredJobs/components/JobFeedView'
-import { JobCategory } from './types'
+import { type ApplicationDto, JobCategory, ApplicationStatus } from './types'
 
 function App() {
   const [isModalOpen, setIsModalOpen] = useState(false)
-  const [viewMode, setViewMode] = useState<'table' | 'kanban' | 'feed'>('kanban')
+  const [selectedApplication, setSelectedApplication] = useState<ApplicationDto | null>(null)
+  const [viewMode, setViewMode] = useState<'table' | 'kanban'>('kanban')
   const { data: applications, isLoading, isError } = useApplications()
 
   const [searchQuery, setSearchQuery] = useState('')
@@ -35,6 +36,44 @@ function App() {
     })
   }, [applications, searchQuery, categoryFilter])
 
+  const exportToCsv = () => {
+    if (!applications || applications.length === 0) return
+
+    const statusMap: Record<number, string> = {
+      [ApplicationStatus.Applied]: 'Prijavljeno',
+      [ApplicationStatus.InReview]: 'U pregledu',
+      [ApplicationStatus.Interviewing]: 'Intervju',
+      [ApplicationStatus.Offered]: 'Ponuda',
+      [ApplicationStatus.Rejected]: 'Odbijeno',
+      [ApplicationStatus.Withdrawn]: 'Povučeno',
+    }
+
+    const headers = ['Tvrtka', 'Pozicija', 'Kategorija', 'Status', 'Model rada', 'Placa/Satnica', 'Valuta', 'Datum prijave', 'Tech Tagovi', 'Oglas Link', 'Biljeske']
+    const rows = applications.map(app => [
+      `"${app.companyName.replace(/"/g, '""')}"`,
+      `"${app.positionTitle.replace(/"/g, '""')}"`,
+      app.jobCategory === JobCategory.IT ? 'IT' : 'Opci',
+      statusMap[app.status] || 'Nepoznato',
+      app.workModel || '',
+      app.hourlyRateOrSalary || '',
+      app.currency || 'EUR',
+      new Date(app.appliedDate).toLocaleDateString('hr-HR'),
+      `"${app.techTags.join(', ')}"`,
+      `"${app.jobUrl || ''}"`,
+      `"${(app.notes || '').replace(/"/g, '""')}"`,
+    ])
+
+    const csvContent = '\uFEFF' + [headers.join(','), ...rows.map(e => e.join(','))].join('\n')
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
+    const url = URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    link.href = url
+    link.setAttribute('download', `Moje_Prijave_${new Date().toISOString().slice(0, 10)}.csv`)
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+  }
+
   return (
     <div className="min-h-screen bg-gray-100">
       <header className="bg-white shadow-sm">
@@ -47,6 +86,7 @@ function App() {
           </div>
 
           <div className="flex items-center gap-3">
+            {/* Toggle za prikaz (Kanban / Tablica) */}
             <div className="flex bg-gray-100 p-1 rounded-lg border border-gray-200">
               <button
                 onClick={() => setViewMode('kanban')}
@@ -70,18 +110,17 @@ function App() {
                 <List size={14} />
                 Tablica
               </button>
-              <button
-                onClick={() => setViewMode('feed')}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-all ${
-                  viewMode === 'feed'
-                    ? 'bg-white text-gray-900 shadow-sm'
-                    : 'text-gray-600 hover:text-gray-900'
-                }`}
-              >
-                <Compass size={14} />
-                Pronađeni poslovi
-              </button>
             </div>
+
+            <button
+              onClick={exportToCsv}
+              disabled={!applications || applications.length === 0}
+              className="flex items-center gap-1.5 border border-gray-300 hover:bg-gray-50 text-gray-700 px-3 py-2 rounded-lg text-xs font-medium transition-colors cursor-pointer disabled:opacity-50"
+              title="Preuzmi sve prijave u Excel/CSV formatu"
+            >
+              <Download size={14} />
+              Izvezi CSV
+            </button>
 
             <button
               onClick={() => setIsModalOpen(true)}
@@ -94,73 +133,68 @@ function App() {
         </div>
       </header>
 
-            <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <StatsOverview applications={applications || []} />
 
         <div className="bg-white rounded-lg shadow min-h-[400px]">
-                    <div className="px-6 py-4 border-b border-gray-200 flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div className="px-6 py-4 border-b border-gray-200 flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div className="flex items-center gap-3">
-              <h2 className="text-lg font-semibold text-gray-700">
-                {viewMode === 'feed' ? 'Pronađeni poslovi (Feed)' : 'Moje prijave'}
-              </h2>
-              {applications && viewMode !== 'feed' && (
+              <h2 className="text-lg font-semibold text-gray-700">Moje prijave</h2>
+              {applications && (
                 <span className="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full font-medium">
                   {filteredApplications.length} od {applications.length}
                 </span>
               )}
             </div>
 
-            {/* Tražilica i Filteri (samo za Kanban i Tablicu) */}
-            {viewMode !== 'feed' && (
-              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
-                <div className="relative">
-                  <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-                  <input
-                    type="text"
-                    value={searchQuery}
-                    onChange={e => setSearchQuery(e.target.value)}
-                    placeholder="Traži tvrtku, poziciju, tag..."
-                    className="pl-8 pr-3 py-1.5 border border-gray-300 rounded-lg text-xs bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 w-full sm:w-56"
-                  />
-                  {searchQuery && (
-                    <button
-                      onClick={() => setSearchQuery('')}
-                      className="absolute right-2.5 top-1/2 -translate-y-1/2 text-xs text-gray-400 hover:text-gray-600"
-                    >
-                      ×
-                    </button>
-                  )}
-                </div>
-
-                <div className="flex items-center gap-1 bg-gray-50 p-1 rounded-lg border border-gray-200 text-xs">
-                  <Filter size={12} className="text-gray-400 ml-1.5 mr-0.5" />
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+              <div className="relative">
+                <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                <input
+                  type="text"
+                  value={searchQuery}
+                  onChange={e => setSearchQuery(e.target.value)}
+                  placeholder="Traži tvrtku, poziciju, tag..."
+                  className="pl-8 pr-3 py-1.5 border border-gray-300 rounded-lg text-xs bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 w-full sm:w-56"
+                />
+                {searchQuery && (
                   <button
-                    onClick={() => setCategoryFilter('all')}
-                    className={`px-2.5 py-1 rounded text-xs font-medium transition-all ${
-                      categoryFilter === 'all' ? 'bg-white text-gray-900 shadow-xs' : 'text-gray-500 hover:text-gray-800'
-                    }`}
+                    onClick={() => setSearchQuery('')}
+                    className="absolute right-2.5 top-1/2 -translate-y-1/2 text-xs text-gray-400 hover:text-gray-600"
                   >
-                    Sve
+                    ×
                   </button>
-                  <button
-                    onClick={() => setCategoryFilter('it')}
-                    className={`px-2.5 py-1 rounded text-xs font-medium transition-all ${
-                      categoryFilter === 'it' ? 'bg-white text-indigo-700 shadow-xs font-semibold' : 'text-gray-500 hover:text-gray-800'
-                    }`}
-                  >
-                    Samo IT
-                  </button>
-                  <button
-                    onClick={() => setCategoryFilter('general')}
-                    className={`px-2.5 py-1 rounded text-xs font-medium transition-all ${
-                      categoryFilter === 'general' ? 'bg-white text-gray-900 shadow-xs font-semibold' : 'text-gray-500 hover:text-gray-800'
-                    }`}
-                  >
-                    Opći
-                  </button>
-                </div>
+                )}
               </div>
-            )}
+
+              <div className="flex items-center gap-1 bg-gray-50 p-1 rounded-lg border border-gray-200 text-xs">
+                <Filter size={12} className="text-gray-400 ml-1.5 mr-0.5" />
+                <button
+                  onClick={() => setCategoryFilter('all')}
+                  className={`px-2.5 py-1 rounded text-xs font-medium transition-all ${
+                    categoryFilter === 'all' ? 'bg-white text-gray-900 shadow-xs' : 'text-gray-500 hover:text-gray-800'
+                  }`}
+                >
+                  Sve
+                </button>
+                <button
+                  onClick={() => setCategoryFilter('it')}
+                  className={`px-2.5 py-1 rounded text-xs font-medium transition-all ${
+                    categoryFilter === 'it' ? 'bg-white text-indigo-700 shadow-xs font-semibold' : 'text-gray-500 hover:text-gray-800'
+                  }`}
+                >
+                  Samo IT
+                </button>
+                <button
+                  onClick={() => setCategoryFilter('general')}
+                  className={`px-2.5 py-1 rounded text-xs font-medium transition-all ${
+                    categoryFilter === 'general' ? 'bg-white text-gray-900 shadow-xs font-semibold' : 'text-gray-500 hover:text-gray-800'
+                  }`}
+                >
+                  Opći
+                </button>
+              </div>
+            </div>
           </div>
 
           {isLoading ? (
@@ -171,12 +205,16 @@ function App() {
             <div className="text-center py-16 text-red-500 text-sm">
               Greška pri dohvaćanju prijava. Provjeri je li backend pokrenut.
             </div>
-          ) : viewMode === 'feed' ? (
-            <JobFeedView />
           ) : viewMode === 'kanban' ? (
-            <KanbanBoard applications={filteredApplications} />
+            <KanbanBoard 
+              applications={filteredApplications} 
+              onCardClick={(app) => setSelectedApplication(app)}
+            />
           ) : (
-            <ApplicationsList applications={filteredApplications} />
+            <ApplicationsList 
+              applications={filteredApplications} 
+              onRowClick={(app) => setSelectedApplication(app)}
+            />
           )}
         </div>
       </main>
@@ -184,6 +222,11 @@ function App() {
       <CreateApplicationModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
+      />
+
+      <ApplicationDetailsModal
+        application={selectedApplication}
+        onClose={() => setSelectedApplication(null)}
       />
     </div>
   )

@@ -3,7 +3,6 @@ using JobTracker.Application.Features.Applications.Dtos;
 using JobTracker.Application.Features.Applications.Queries;
 using JobTracker.Domain.Enums;
 using Microsoft.AspNetCore.Mvc;
-using JobTracker.Application.Common.Interfaces;
 
 namespace JobTracker.WebApi.Controllers;
 
@@ -37,21 +36,22 @@ public class ApplicationsController : ApiControllerBase
 
         return NoContent(); 
     }
-    private readonly INotificationService _notificationService;
-    private readonly IJobScraperService _scraperService;
 
-    public ApplicationsController(INotificationService notificationService, IJobScraperService scraperService)
+    [HttpPut("{id:guid}/details")]
+    public async Task<IActionResult> UpdateDetails(Guid id, [FromBody] UpdateApplicationNotesCommand command)
     {
-        _notificationService = notificationService;
-        _scraperService = scraperService;
-    }
+        if (id != command.Id)
+        {
+            return BadRequest();
+        }
 
-    //Test endpoint for scraping jobs from MojPosao
-    [HttpGet("scrape")]
-    public async Task<IActionResult> ScrapeJobs([FromQuery] string keyword = "junior")
-    {
-        var jobs = await _scraperService.ScrapeJobsAsync(keyword);
-        return Ok(jobs);
+        var success = await Mediator.Send(command);
+        if (!success)
+        {
+            return NotFound();
+        }
+
+        return NoContent();
     }
 
     [HttpDelete("{id:guid}")]
@@ -65,5 +65,4 @@ public class ApplicationsController : ApiControllerBase
 
         return NoContent();
     }
-
 }

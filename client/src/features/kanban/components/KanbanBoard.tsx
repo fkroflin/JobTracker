@@ -13,9 +13,10 @@ const COLUMNS: { id: ApplicationStatus; title: string; color: string }[] = [
 
 interface Props {
   applications: ApplicationDto[]
+  onCardClick?: (app: ApplicationDto) => void
 }
 
-export const KanbanBoard = ({ applications }: Props) => {
+export const KanbanBoard = ({ applications, onCardClick }: Props) => {
   const updateStatusMutation = useUpdateApplicationStatus()
 
   const handleDragEnd = (result: DropResult) => {
@@ -58,7 +59,12 @@ export const KanbanBoard = ({ applications }: Props) => {
                     }`}
                   >
                     {colApps.map((app, index) => (
-                      <KanbanCard key={app.id} application={app} index={index} />
+                      <KanbanCard 
+                        key={app.id} 
+                        application={app} 
+                        index={index} 
+                        onClick={() => onCardClick?.(app)}
+                      />
                     ))}
                     {provided.placeholder}
                   </div>

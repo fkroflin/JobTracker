@@ -6,9 +6,12 @@ import { useDeleteApplication } from '../../applications/hooks/useDeleteApplicat
 interface Props {
   application: ApplicationDto
   index: number
+  onClick?: () => void
 }
 
-export const KanbanCard = ({ application, index }: Props) => {const deleteMutation = useDeleteApplication()
+export const KanbanCard = ({ application, index, onClick }: Props) => {
+  const deleteMutation = useDeleteApplication()
+
   return (
     <Draggable draggableId={application.id} index={index}>
       {(provided, snapshot) => (
@@ -16,14 +19,17 @@ export const KanbanCard = ({ application, index }: Props) => {const deleteMutati
           ref={provided.innerRef}
           {...provided.draggableProps}
           {...provided.dragHandleProps}
-          className={`p-4 mb-3 bg-white rounded-lg border transition-shadow cursor-grab active:cursor-grabbing ${
+          onClick={onClick}
+          className={`p-4 mb-3 bg-white rounded-lg border transition-shadow cursor-pointer active:cursor-grabbing ${
             snapshot.isDragging
               ? 'shadow-xl ring-2 ring-blue-500 ring-opacity-50'
               : 'shadow-sm hover:shadow-md border-gray-200'
           }`}
         >
           <div className="flex justify-between items-start mb-2">
-            <h4 className="font-semibold text-gray-900 text-sm">{application.companyName}</h4>
+            <h4 className="font-semibold text-gray-900 text-sm hover:text-blue-600 transition-colors">
+              {application.companyName}
+            </h4>
             {application.jobCategory === JobCategory.IT ? (
               <span className="text-xs text-indigo-600 flex items-center gap-0.5" title="IT Pozicija">
                 <Code2 size={13} />
@@ -37,7 +43,7 @@ export const KanbanCard = ({ application, index }: Props) => {const deleteMutati
 
           <p className="text-xs text-gray-600 mb-3">{application.positionTitle}</p>
 
-          {/* Tech Tags (if they exist) */}
+          {/* Tech Tags */}
           {application.techTags && application.techTags.length > 0 && (
             <div className="flex flex-wrap gap-1 mb-3">
               {application.techTags.slice(0, 3).map(tag => (
@@ -61,7 +67,7 @@ export const KanbanCard = ({ application, index }: Props) => {const deleteMutati
                   href={application.jobUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  onClick={e => e.stopPropagation()} // prevents drag activation on link click
+                  onClick={e => e.stopPropagation()}
                   className="text-blue-500 hover:text-blue-700 p-0.5"
                   title="Otvori oglas"
                 >
